@@ -32,11 +32,9 @@ class WeeklyAppleSalesReport(models.Model):
 
     def get_and_process_invoice_data(self):
         """Finds Invoices and returns data"""
-        # OK / TO CHANGE IN PRODUCTION
+
         today_date = datetime.today()
-        # TEST
         # today_date = datetime(2023,11,30)
-        # today_date = datetime(2023,12,7)
 
         previous_week_monday_date = self.get_previous_week_monday_date(
             today_date)
@@ -59,7 +57,6 @@ class WeeklyAppleSalesReport(models.Model):
         ])
 
         if not invoices:
-            # raise Warning('No invoices found')
             _logger.warning('WARNING: No invoice found')
             return []
 
@@ -196,8 +193,6 @@ class WeeklyAppleSalesReport(models.Model):
 
     def generate_and_send_xlsx_file(self, recipient_email, sender_email, cc_email, data_matrix):
         HEADER_TEXT = 'Weekly Apple Sales Report'
-        # sender_email = '"OdooBot" <odoobot@jtrs.co.uk>'
-        # cc_email = 'martynas.minskis@jtrs.co.uk'
 
         # Generate XLSX file
         binary_data = self.generate_xlsx_file(data_matrix)
