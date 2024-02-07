@@ -26,20 +26,14 @@ class WeeklyAppleSalesReport(models.Model):
         return today - timedelta(days=days_to_subtract)
 
     def get_address(self, contact):
-        """Return formatted address from a contact"""
-        length_limit = 58
-        address_parts = [contact.street, contact.street2, contact.x_address3]
-        new_address = ', '.join(filter(None, address_parts))
-
-        if new_address and len(new_address) > length_limit:
-            new_address = new_address[:length_limit]
-
-        return new_address
+        """ Format the address from contact details. """
+        address_parts = [part for part in [contact.street,
+                                           contact.street2, contact.x_address3] if part]
+        return ', '.join(address_parts)[:58]  # Truncate to 58 characters
 
     def process_field(self, field_value):
-        if not field_value:
-            return '/'
-        return field_value
+        """ Process and format a field value for report. """
+        return field_value or '/'
 
     def get_and_process_invoice_data(self):
         """Finds Invoices and returns data"""
@@ -68,7 +62,7 @@ class WeeklyAppleSalesReport(models.Model):
         ])
 
         if not invoices:
-            _logger.warning('WARNING: No invoice found')
+            _logger.warning('No invoice found for the specified period')
             return []
 
         result = [['Product Code', 'Invoice Quantity', 'Invoice Number', 'Invoice Date',
@@ -231,8 +225,8 @@ class WeeklyAppleSalesReport(models.Model):
         # data_matrix = [['A1', 'B1', 'C1'], ['A2', 'B2', 'C2'], ['A3', 'B3', 'C3']]
         data_matrix = self.get_and_process_invoice_data()
         if not data_matrix:
-            _logger.warning('WARNING: data_matrix was not created.')
-            return
+            _logger.warning('No data available for the report.')
+            return False
 
-        self.generate_and_send_xlsx_file(
+        return self.generate_and_send_xlsx_file(
             recipient_email, sender_email, cc_email, data_matrix)
