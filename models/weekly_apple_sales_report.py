@@ -28,9 +28,12 @@ class WeeklyAppleSalesReport(models.Model):
     def get_address(self, contact):
         """Return formatted address from a contact"""
         address_parts = [contact.street, contact.street2, contact.x_address3]
-        if address_parts and len(address_parts) > 35:
-            address_parts = address_parts[0:35]
-        return ', '.join(filter(None, address_parts))
+        new_address = ', '.join(filter(None, address_parts))
+
+        if new_address and len(new_address) > 35:
+            new_address = new_address[0:35]
+
+        return new_address
 
     def process_field(self, field_value):
         if not field_value:
@@ -85,7 +88,7 @@ class WeeklyAppleSalesReport(models.Model):
                     self.process_field(invoice.partner_shipping_id.city),
                     self.process_field(
                         invoice.partner_shipping_id.country_id.name),
-                    self.process_field(invoice.partner_shipping_id.x_school),
+                    invoice.partner_shipping_id.x_school,
                 ])
 
         return result
