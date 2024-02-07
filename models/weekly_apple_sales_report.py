@@ -27,11 +27,12 @@ class WeeklyAppleSalesReport(models.Model):
 
     def get_address(self, contact):
         """Return formatted address from a contact"""
+        length_limit = 58
         address_parts = [contact.street, contact.street2, contact.x_address3]
         new_address = ', '.join(filter(None, address_parts))
 
-        if new_address and len(new_address) > 35:
-            new_address = new_address[0:35]
+        if new_address and len(new_address) > length_limit:
+            new_address = new_address[:length_limit]
 
         return new_address
 
