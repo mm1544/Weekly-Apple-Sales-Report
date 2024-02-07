@@ -28,7 +28,14 @@ class WeeklyAppleSalesReport(models.Model):
     def get_address(self, contact):
         """Return formatted address from a contact"""
         address_parts = [contact.street, contact.street2, contact.x_address3]
+        if address_parts and len(address_parts) > 35:
+            address_parts = address_parts[0:35]
         return ', '.join(filter(None, address_parts))
+
+    def process_field(self, field_value):
+        if not field_value:
+            return '/'
+        return field_value
 
     def get_and_process_invoice_data(self):
         """Finds Invoices and returns data"""
@@ -66,16 +73,19 @@ class WeeklyAppleSalesReport(models.Model):
         for invoice in invoices:
             for invoice_line in invoice.invoice_line_ids.filtered(lambda l: l.product_id.x_include_in_apple_s2w_report):
                 result.append([
-                    invoice_line.product_id.default_code,
-                    invoice_line.quantity,
-                    invoice.name,
-                    invoice.invoice_date.strftime('%Y%m%d'),
+                    self.process_field(invoice_line.product_id.default_code),
+                    self.process_field(invoice_line.quantity),
+                    self.process_field(invoice.name),
+                    self.process_field(
+                        invoice.invoice_date.strftime('%Y%m%d')),
                     # invoice.invoice_date.strftime('%d%m%Y'),
-                    invoice.partner_shipping_id.name,
-                    self.get_address(invoice.partner_shipping_id),
-                    invoice.partner_shipping_id.city or '',
-                    invoice.partner_shipping_id.country_id.name or '',
-                    invoice.partner_shipping_id.x_school,
+                    self.process_field(invoice.partner_shipping_id.name),
+                    self.process_field(self.get_address(
+                        invoice.partner_shipping_id)),
+                    self.process_field(invoice.partner_shipping_id.city),
+                    self.process_field(
+                        invoice.partner_shipping_id.country_id.name),
+                    self.process_field(invoice.partner_shipping_id.x_school),
                 ])
 
         return result
